@@ -14,6 +14,16 @@ class ImageClip:
     def clip_raster(self, inputFIle = False)
         fileName = input("Path to image file to clip: ")
         outFname = input("Folder path to save the image file") 
-        
-        
-
+        with fiona.open(self.shpPath, 'r') as shapeFile:
+            for feature in shapeFile:
+                shapes = [feature['geometry']]
+        with rasterio.open(fileName) as src:
+            out_image, out_transform = rasterio.mask.mask(src, shapes, crop=True)
+            out_meta = src.meta
+        out_meta.update({
+            'height': out_image.shape[1],
+            'width': out_image.shape[2],
+            'transform': out_transform
+        })
+        with rasterio.open(outFname, 'w', **out_meta) as dst:
+            dst.write(out_image)
