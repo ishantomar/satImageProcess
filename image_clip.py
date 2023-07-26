@@ -11,13 +11,14 @@ class ImageClip:
         self.b8apath = input("Band 8A path: ")
         self.b11path = input("Band 11 path: ")
 
-    def clip_raster(self, inputFIle = False, noData=-1)
-        fileName = input("Path to image file to clip: ")
+    def clip_raster(self, inputFile =None, noData=0, shapeFile=None)
+        if inputFile != None:
+                inputFile = input("Path to image file to clip: ")
         outFname = input("Folder path to save the image file") 
         with fiona.open(self.shpPath, 'r') as shapeFile:
             for feature in shapeFile:
                 shapes = [feature['geometry']]
-        with rasterio.open(fileName) as src:
+        with rasterio.open(inputFile) as src:
             out_image, out_transform = rasterio.mask.mask(src, shapes, crop=True, filled=True, nodata=noData)
             out_meta = src.meta
         out_meta.update({
@@ -27,7 +28,7 @@ class ImageClip:
         })
         with rasterio.open(outFname, 'w', **out_meta) as dst:
             dst.write(out_image)
-    def getNDVI(self, inputFile = False):
+    def getNDVI(self, inputFile = False, noData=0):
         if inputFIle == False:
             nirB = input("Give file name for NIR Band: ")
             rB = input("Give the file name for Red Band ")

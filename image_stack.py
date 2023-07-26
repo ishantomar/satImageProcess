@@ -113,3 +113,41 @@ class ImageStack:
                 dst.write(r, 2)
                 dst.write(b, 3)
             print(i)
+
+    def cloudMaskTest(self):
+        rgbFpath = input(r"Input rgbFpath Name")
+        outCloudFolder = input(r"input could mask folder: ")
+        minThresG = 3000
+        rgbimg = rasterio.open(rgbFpath)
+        g = rgbimg.read(2)
+        meta = rgbimg.meta
+        meta.update({
+            'count': 1
+        })
+        while minThresG < 4000:
+            maskarray = np.zeros(g.shape)
+            maskarray[g>minThresG] = 1
+            Fname = Path(rgbFpath).stem
+            ext = Path(rgbFpath).suffix
+            newFname = Fname+f"_{minThresG}"+ext
+            newFpath = Path(outCloudFolder,newFname)
+            with rasterio.open(newFpath, 'w', **meta) as dst:
+                dst.write(maskarray,2)
+            minThresG += 50
+    def ndvistack(self, ext = "tif", outFname = "NDVI_Stack"):
+        ndviFolder = input(r"Input NDVI folder path: ")
+        outFolder = input(r"Input Output folder path: ")
+        files = glob.glob(f"{ndviFolder}/*.{ext}")
+        outFpath = f"{outFolder}/{outFname}.{ext}"
+        #Taking any raster file assuming all have same meta file:
+        sampleFile = rasterio.open(files[0], 'r')
+        meta = sampleFile.meta
+        meta.update({
+            "count":  len(files)
+        })
+        i = 1
+        with rasterio.open(outFpath, 'w', **meta) as dst:
+            while i<=len(files):
+                with rasterio.open(files[i-1], 'r') as infile:
+                    dst.write(infile.read(1),i)
+                i += 1
