@@ -64,9 +64,23 @@ def getElbowCurve(n_clusters, flatImg):
     i = 2
     while i <= n_clusters:
         print(i)
-        km_dst = clustering.TimeSeriesKMeans(n_clusters=i, metric="euclidean", n_init=3, n_jobs=5, max_iter=5,max_iter_barycenter=3,).fit(flatImg)
+        km_dst = clustering.TimeSeriesKMeans(n_clusters=i, metric="euclidean", n_init=1, n_jobs=5, max_iter=1,max_iter_barycenter=1,).fit(flatImg)
+        print("K means estimated")
         clusterList.append(i)
-        inertiaList.append(km_dst.inertia)
+        inertiaList.append(km_dst.inertia_)
         labelList.append(km_dst.labels_)
         i+= 1
     return clusterList, inertiaList, labelList
+
+# To save the images with clusters merged
+
+def mergeCluster(clusterList, img, meta, imgShape, destFpath=None):
+    zeroImg = np.zeros(clusterImgShape)
+    meta.update(count=1)
+    for i in clusterList:
+        oneIdx = np.where(clusterImg==i)
+        print(i)
+    if destFpath is None:
+        destFpath = input(r"Input dest file path: ")
+    with rio.open(destFpath, 'w', **meta) as dst:
+        dest.write(zeroImg)
